@@ -4,6 +4,9 @@ import 'package:eco_web/webapp/screens/driverDetails.dart';
 import 'package:eco_web/webapp/screens/home_screen.dart';
 import 'package:eco_web/webapp/screens/userDetails.dart';
 import 'package:flutter/material.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 
 class DriverDetailsPage extends StatefulWidget {
   @override
@@ -11,8 +14,42 @@ class DriverDetailsPage extends StatefulWidget {
 }
 
 class _DriverDetailsPageState extends State<DriverDetailsPage> {
+  String searchQuery = '';
+
   Stream<QuerySnapshot> getDriversStream() {
     return FirebaseFirestore.instance.collection('drivers').snapshots();
+  }
+
+  Future<void> generatePdf() async {
+    final pdf = pw.Document();
+    final snapshot =
+        await FirebaseFirestore.instance.collection('drivers').get();
+
+    pdf.addPage(pw.Page(
+      build: (pw.Context context) {
+        return pw.Column(
+          children: [
+            pw.Text('Driver Details', style: pw.TextStyle(fontSize: 24)),
+            pw.SizedBox(height: 20),
+            pw.Table.fromTextArray(
+              headers: ['Name', 'NIC', 'License No', 'Phone'],
+              data: snapshot.docs.map((doc) {
+                return [
+                  doc['name'],
+                  doc['nic'],
+                  doc['driving_license_number'],
+                  doc['phone'],
+                ];
+              }).toList(),
+            ),
+          ],
+        );
+      },
+    ));
+
+    // Save PDF to a file or share it
+    await Printing.sharePdf(
+        bytes: await pdf.save(), filename: 'drivers_details.pdf');
   }
 
   @override
@@ -107,7 +144,7 @@ class _DriverDetailsPageState extends State<DriverDetailsPage> {
                 ListTile(
                   leading: const Icon(Icons.person, color: Color(0xff27AE60)),
                   title: const Text(
-                    'App Users',
+                    'App usres',
                     style: TextStyle(
                         color: Colors.black87,
                         fontSize: 18.0,
@@ -147,7 +184,7 @@ class _DriverDetailsPageState extends State<DriverDetailsPage> {
                   leading: const Icon(Icons.app_registration,
                       color: Color(0xff27AE60)),
                   title: const Text(
-                    'Driver Registration',
+                    'Drever registration',
                     style: TextStyle(
                         color: Colors.black87,
                         fontSize: 18.0,
@@ -167,13 +204,26 @@ class _DriverDetailsPageState extends State<DriverDetailsPage> {
                   leading:
                       const Icon(Icons.contact_phone, color: Color(0xff27AE60)),
                   title: const Text(
-                    'Contact',
+                    'Contatact',
                     style: TextStyle(
                         color: Colors.black87,
                         fontSize: 18.0,
                         fontWeight: FontWeight.w500),
                   ),
                   onTap: () {},
+                ),
+                Spacer(), // Pushes the logout button to the bottom
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: IconButton(
+                    icon: Icon(Icons.logout, color: Color(0xff27AE60)),
+                    tooltip: 'Log out',
+                    onPressed: () {
+                      // Add logout logic here
+                      // You can navigate to a login page or clear any session info
+                      Navigator.pop(context); // Example action to pop the page
+                    },
+                  ),
                 ),
               ],
             ),
@@ -191,12 +241,37 @@ class _DriverDetailsPageState extends State<DriverDetailsPage> {
                         TextStyle(fontSize: 28.0, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 20),
+                  // Search bar
+                  TextField(
+                    decoration: InputDecoration(
+                      labelText: 'Search',
+                      prefixIcon: Icon(Icons.search),
+                      border: OutlineInputBorder(),
+                    ),
+                    onChanged: (value) {
+                      setState(() {
+                        searchQuery = value.toLowerCase();
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: generatePdf,
+                    child: const Text('Download Driver Details PDF'),
+                  ),
+                  const SizedBox(height: 20),
                   StreamBuilder<QuerySnapshot>(
                     stream: getDriversStream(),
                     builder: (context, snapshot) {
                       if (!snapshot.hasData) {
                         return const CircularProgressIndicator();
                       }
+                      final filteredDocs = snapshot.data!.docs.where((doc) {
+                        return doc['name']
+                                .toLowerCase()
+                                .contains(searchQuery) ||
+                            doc['nic'].toLowerCase().contains(searchQuery);
+                      }).toList();
                       return Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(16.0),
@@ -229,9 +304,9 @@ class _DriverDetailsPageState extends State<DriverDetailsPage> {
                             DataColumn(label: Text('NIC')),
                             DataColumn(label: Text('License No')),
                             DataColumn(label: Text('Phone')),
-                            DataColumn(label: Text('Actions')), // For delete
+                            DataColumn(label: Text('Actions')),
                           ],
-                          rows: snapshot.data!.docs.map((doc) {
+                          rows: filteredDocs.map((doc) {
                             return DataRow(
                               cells: [
                                 DataCell(Padding(
@@ -257,11 +332,9 @@ class _DriverDetailsPageState extends State<DriverDetailsPage> {
                                 DataCell(
                                   ElevatedButton(
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor:
-                                          Colors.red, // Delete button color
+                                      backgroundColor: Colors.red,
                                     ),
                                     onPressed: () async {
-                                      // Delete the driver from Firestore
                                       await FirebaseFirestore.instance
                                           .collection('drivers')
                                           .doc(doc.id)

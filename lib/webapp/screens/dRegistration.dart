@@ -197,6 +197,19 @@ class _DriverRegistrationPageState extends State<DriverRegistrationPage> {
                   ),
                   onTap: () {},
                 ),
+                Spacer(), // Pushes the logout button to the bottom
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: IconButton(
+                    icon: Icon(Icons.logout, color: Color(0xff27AE60)),
+                    tooltip: 'Log out',
+                    onPressed: () {
+                      // Add logout logic here
+                      // You can navigate to a login page or clear any session info
+                      Navigator.pop(context); // Example action to pop the page
+                    },
+                  ),
+                ),
               ],
             ),
           ),
