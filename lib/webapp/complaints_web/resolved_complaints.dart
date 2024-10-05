@@ -1,63 +1,27 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:eco_web/webapp/complaints_web/pending_complaints.dart';
 import 'package:eco_web/webapp/complaints_web/report_complaints.dart';
-import 'package:eco_web/webapp/complaints_web/resolved_complaints.dart';
 import 'package:eco_web/webapp/screens/dRegistration.dart';
 import 'package:eco_web/webapp/screens/driverDetails.dart';
 import 'package:eco_web/webapp/screens/home_screen.dart';
+import 'package:eco_web/webapp/screens/userDetails.dart';
 import 'package:flutter/material.dart';
-import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
 
-class UserDetailsPage extends StatefulWidget {
+class ResolvedComplaints extends StatefulWidget {
+  const ResolvedComplaints({super.key});
+
   @override
-  _UserDetailsPageState createState() => _UserDetailsPageState();
+  _ResolvedComplaintsState createState() => _ResolvedComplaintsState();
 }
 
-class _UserDetailsPageState extends State<UserDetailsPage> {
-  String searchQuery = '';
-  Stream<QuerySnapshot> getUsersStream() {
-    return FirebaseFirestore.instance.collection('users').snapshots();
-  }
+class _ResolvedComplaintsState extends State<ResolvedComplaints> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
-  Future<void> generatePdf() async {
-    final pdf = pw.Document();
-    final snapshot = await FirebaseFirestore.instance.collection('users').get();
-
-    if (snapshot.docs.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No users found to include in the PDF.')),
-      );
-      return;
-    }
-
-    pdf.addPage(pw.Page(
-      build: (pw.Context context) {
-        return pw.Column(
-          children: [
-            pw.Text('User Details', style: pw.TextStyle(fontSize: 24)),
-            pw.SizedBox(height: 20),
-            pw.Table.fromTextArray(
-              headers: ['Name', 'NIC', 'Phone', 'Address No', 'Street', 'City'],
-              data: snapshot.docs.map((doc) {
-                return [
-                  doc['name'],
-                  doc['nic'],
-                  doc['phone'],
-                  doc['addressNo'],
-                  doc['street'],
-                  doc['city'],
-                ];
-              }).toList(),
-            ),
-          ],
-        );
-      },
-    ));
-
-    await Printing.sharePdf(
-        bytes: await pdf.save(), filename: 'user_details.pdf');
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -65,7 +29,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xff27AE60),
-        title: Row(
+        title: const Row(
           children: [
             Expanded(
               child: Text(
@@ -76,7 +40,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                     fontWeight: FontWeight.w600),
               ),
             ),
-            const Icon(Icons.person_rounded, color: Colors.white)
+            Icon(Icons.person_rounded, color: Colors.white),
           ],
         ),
       ),
@@ -84,7 +48,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
         children: [
           // Sidebar
           Container(
-            width: 300, // Set the width of the sidebar
+            width: 300, // Width of the sidebar
             color: const Color.fromARGB(
                 255, 224, 248, 225), // Sidebar background color
             child: Column(
@@ -170,7 +134,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                 ListTile(
                   leading: const Icon(Icons.person, color: Color(0xff27AE60)),
                   title: const Text(
-                    'App usres',
+                    'App Users',
                     style: TextStyle(
                         color: Colors.black87,
                         fontSize: 18.0,
@@ -210,7 +174,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                   leading: const Icon(Icons.app_registration,
                       color: Color(0xff27AE60)),
                   title: const Text(
-                    'Drever registration',
+                    'Driver Registration',
                     style: TextStyle(
                         color: Colors.black87,
                         fontSize: 18.0,
@@ -230,7 +194,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                   leading:
                       const Icon(Icons.contact_phone, color: Color(0xff27AE60)),
                   title: const Text(
-                    'Contatact',
+                    'Contact',
                     style: TextStyle(
                         color: Colors.black87,
                         fontSize: 18.0,
@@ -238,11 +202,12 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                   ),
                   onTap: () {},
                 ),
-                Spacer(), // Pushes the logout button to the bottom
+                // Log out button at the bottom
+                const Spacer(), // Pushes the logout button to the bottom
                 Align(
                   alignment: Alignment.bottomCenter,
                   child: IconButton(
-                    icon: Icon(Icons.logout, color: Color(0xff27AE60)),
+                    icon: const Icon(Icons.logout, color: Color(0xff27AE60)),
                     tooltip: 'Log out',
                     onPressed: () {
                       // Add logout logic here
@@ -254,139 +219,142 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
               ],
             ),
           ),
-          // Main content area
+          // Main content area with scrolling
           Expanded(
-            child: SingleChildScrollView(
+            child: Container(
               padding: const EdgeInsets.all(20.0),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start, 
                 children: [
+                  const SizedBox(height: 15),
                   const Text(
-                    'App Users',
-                    style:
-                        TextStyle(fontSize: 28.0, fontWeight: FontWeight.bold),
+                    'Resolved User Complaints',
+                    style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87),
                   ),
                   const SizedBox(height: 20),
-                  // Search bar
+
+                  // Search TextField
                   TextField(
+                    controller: _searchController,
                     decoration: InputDecoration(
-                      labelText: 'Search',
-                      prefixIcon: Icon(Icons.search),
-                      border: OutlineInputBorder(),
+                      labelText: 'Search Complaints',
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                     onChanged: (value) {
                       setState(() {
-                        searchQuery = value.toLowerCase();
+                        _searchQuery = value.toLowerCase();
                       });
                     },
                   ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: generatePdf,
-                    child: Text('Download User Details PDF'),
-                  ),
-                  const SizedBox(height: 20),
+
+                  const SizedBox(height: 40),
+
+                  // Complaints Data Table
                   StreamBuilder<QuerySnapshot>(
-                    stream: getUsersStream(),
+                    stream: FirebaseFirestore.instance
+                        .collection('Complaints')
+                        .where('Status', isEqualTo: 'resolved')
+                        .snapshots(),
                     builder: (context, snapshot) {
-                      if (!snapshot.hasData) {
-                        return const CircularProgressIndicator();
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                        return const Center(
+                            child: Text('No resolved complaints found.'));
                       }
 
-                      // Filter users based on search query
-                      final filteredDocs = snapshot.data!.docs.where((doc) {
-                        return doc['name']
-                                .toLowerCase()
-                                .contains(searchQuery) ||
-                            doc['nic'].toLowerCase().contains(searchQuery) ||
-                            doc['phone'].toLowerCase().contains(searchQuery);
+                      // Filter the data based on the search query
+                      var filteredDocs = snapshot.data!.docs.where((doc) {
+                        String name = doc['Name'].toLowerCase();
+                        String email = doc['Email'].toLowerCase();
+                        String location = doc['Location'].toLowerCase();
+                        String description = doc['Description'].toLowerCase();
+                        return name.contains(_searchQuery) ||
+                            email.contains(_searchQuery) ||
+                            location.contains(_searchQuery) ||
+                            description.contains(_searchQuery);
                       }).toList();
 
-                      return Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(16.0),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.3),
-                              blurRadius: 10,
-                              spreadRadius: 2,
-                            ),
-                          ],
-                        ),
+                      // Check if filtered results are empty
+                      if (filteredDocs.isEmpty) {
+                        return const Center(
+                            child: Text('No search results found.'));
+                      }
+
+                      return SingleChildScrollView(
+                        scrollDirection:Axis.horizontal,
                         child: DataTable(
-                          columnSpacing: 20.0,
-                          headingRowColor: MaterialStateProperty.all(
-                              const Color(0xff27AE60)),
-                          headingTextStyle: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            fontSize: 16.0,
-                          ),
-                          dataTextStyle: const TextStyle(
-                            fontSize: 14.0,
-                            color: Colors.black87,
-                          ),
+                          columnSpacing: 20,
                           columns: const [
-                            DataColumn(label: Text('Name')),
-                            DataColumn(label: Text('NIC')),
-                            DataColumn(label: Text('Phone')),
-                            DataColumn(label: Text('Address No')),
-                            DataColumn(label: Text('Street')),
-                            DataColumn(label: Text('City')),
-                            DataColumn(label: Text('Actions')),
+                            DataColumn(
+                                label: Text('Name',
+                                    style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.black87))),
+                            DataColumn(
+                                label: Text('Email',
+                                    style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.black87))),
+                            DataColumn(
+                                label: Text('Location',
+                                    style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.black87))),
+                            DataColumn(
+                                label: Text('Description',
+                                    style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.black87))),
+                            DataColumn(
+                                label: Text('Date',
+                                    style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.black87))),
                           ],
-                          rows: filteredDocs.map((doc) {
-                            return DataRow(
-                              cells: [
-                                DataCell(Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 8.0),
-                                  child: Text(doc['name']),
-                                )),
-                                DataCell(Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 8.0),
-                                  child: Text(doc['nic']),
-                                )),
-                                DataCell(Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 8.0),
-                                  child: Text(doc['phone']),
-                                )),
-                                DataCell(Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 8.0),
-                                  child: Text(doc['addressNo']),
-                                )),
-                                DataCell(Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 8.0),
-                                  child: Text(doc['street']),
-                                )),
-                                DataCell(Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 8.0),
-                                  child: Text(doc['city']),
-                                )),
-                                DataCell(
-                                  ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.red,
-                                    ),
-                                    onPressed: () async {
-                                      await FirebaseFirestore.instance
-                                          .collection('users')
-                                          .doc(doc.id)
-                                          .delete();
-                                    },
-                                    child: const Text('Delete'),
-                                  ),
+                          rows: filteredDocs.map((complaint) {
+                            return DataRow(cells: [
+                              DataCell(SizedBox(
+                                width: 100, // Fixed width for the Name column
+                                child: Text(complaint['Name']),
+                              )),
+                              DataCell(SizedBox(
+                                width: 200, // Fixed width for the Email column
+                                child: Text(complaint['Email']),
+                              )),
+                              DataCell(SizedBox(
+                                width: 250, // Fixed width for the Location column
+                                child: Text(complaint['Location']),
+                              )),
+                              DataCell(SizedBox(
+                                width: 400, // Fixed width for the Description column
+                                child: Text(
+                                  complaint['Description'],
+                                  maxLines: 3, // Limit to 3 lines for readability
+                                  overflow: TextOverflow.ellipsis, // Handle text overflow
                                 ),
-                              ],
-                            );
+                              )),
+                              DataCell(SizedBox(
+                                width: 100, // Fixed width for the Date column
+                                child: Text(complaint['Date']),
+                              )),
+                            ]);
                           }).toList(),
                         ),
                       );
@@ -395,7 +363,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                 ],
               ),
             ),
-          ),
+          )
         ],
       ),
     );

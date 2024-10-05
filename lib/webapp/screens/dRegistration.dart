@@ -1,4 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:eco_web/webapp/complaints_web/pending_complaints.dart';
+import 'package:eco_web/webapp/complaints_web/report_complaints.dart';
+import 'package:eco_web/webapp/complaints_web/resolved_complaints.dart';
 import 'package:eco_web/webapp/screens/driverDetails.dart';
 import 'package:eco_web/webapp/screens/home_screen.dart';
 import 'package:eco_web/webapp/screens/userDetails.dart';
@@ -97,7 +100,13 @@ class _DriverRegistrationPageState extends State<DriverRegistrationPage> {
                         fontSize: 18.0,
                         fontWeight: FontWeight.w500),
                   ),
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const PendingComplaints()),
+                    );
+                  },
                 ),
                 const SizedBox(height: 10.0),
                 ListTile(
@@ -110,7 +119,13 @@ class _DriverRegistrationPageState extends State<DriverRegistrationPage> {
                         fontSize: 18.0,
                         fontWeight: FontWeight.w500),
                   ),
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const ResolvedComplaints()),
+                    );
+                  },
                 ),
                 const SizedBox(height: 10.0),
                 ListTile(
@@ -123,7 +138,13 @@ class _DriverRegistrationPageState extends State<DriverRegistrationPage> {
                         fontSize: 18.0,
                         fontWeight: FontWeight.w500),
                   ),
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const ComplaintsReportPage()),
+                    );
+                  },
                 ),
                 const SizedBox(height: 10.0),
                 ListTile(

@@ -1,4 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:eco_web/webapp/complaints_web/pending_complaints.dart';
+import 'package:eco_web/webapp/complaints_web/report_complaints.dart';
+import 'package:eco_web/webapp/complaints_web/resolved_complaints.dart';
 import 'package:eco_web/webapp/screens/dRegistration.dart';
 import 'package:eco_web/webapp/screens/driverDetails.dart';
 import 'package:eco_web/webapp/screens/userDetails.dart';
@@ -58,7 +61,7 @@ class _ComplaintsWebHomeState extends State<HomeScreen> {
 
       for (var doc in snapshot.docs) {
         String dateString =
-            doc['Date']; // Assuming you have a 'Date' field as a string
+            doc['Date']; // 'Date' field as a string
         DateTime date =
             DateFormat('yyyy-MM-dd').parse(dateString); // Parse date string
         int month = date.month - 1; // Get month (January is 1)
@@ -95,7 +98,7 @@ class _ComplaintsWebHomeState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xff27AE60),
-        title: Row(
+        title: const Row(
           children: [
             Expanded(
               child: Text(
@@ -106,7 +109,7 @@ class _ComplaintsWebHomeState extends State<HomeScreen> {
                     fontWeight: FontWeight.w600),
               ),
             ),
-            const Icon(Icons.person_rounded, color: Colors.white)
+            Icon(Icons.person_rounded, color: Colors.white)
           ],
         ),
       ),
@@ -150,7 +153,13 @@ class _ComplaintsWebHomeState extends State<HomeScreen> {
                         fontSize: 18.0,
                         fontWeight: FontWeight.w500),
                   ),
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const PendingComplaints()),
+                    );
+                  },
                 ),
                 const SizedBox(height: 10.0),
                 ListTile(
@@ -163,7 +172,13 @@ class _ComplaintsWebHomeState extends State<HomeScreen> {
                         fontSize: 18.0,
                         fontWeight: FontWeight.w500),
                   ),
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const ResolvedComplaints()),
+                    );
+                  },
                 ),
                 const SizedBox(height: 10.0),
                 ListTile(
@@ -176,7 +191,13 @@ class _ComplaintsWebHomeState extends State<HomeScreen> {
                         fontSize: 18.0,
                         fontWeight: FontWeight.w500),
                   ),
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const ComplaintsReportPage()),
+                    );
+                  },
                 ),
                 const SizedBox(height: 10.0),
                 ListTile(
@@ -331,10 +352,10 @@ class _ComplaintsWebHomeState extends State<HomeScreen> {
                       BarChartData(
                         borderData: FlBorderData(show: false),
                         titlesData: FlTitlesData(
-                          rightTitles: AxisTitles(
+                          rightTitles: const AxisTitles(
                             sideTitles: SideTitles(showTitles: false),
                           ),
-                          topTitles: AxisTitles(
+                          topTitles: const AxisTitles(
                             sideTitles: SideTitles(showTitles: false),
                           ),
                           bottomTitles: AxisTitles(
