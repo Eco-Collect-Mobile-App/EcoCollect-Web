@@ -13,6 +13,7 @@ class _DriverRegistrationPageState extends State<DriverRegistrationPage> {
   final _formKey = GlobalKey<FormState>();
 
   final TextEditingController nameController = TextEditingController();
+  final TextEditingController usernameController = TextEditingController();
   final TextEditingController nicController = TextEditingController();
   final TextEditingController licenseController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
@@ -21,12 +22,14 @@ class _DriverRegistrationPageState extends State<DriverRegistrationPage> {
     if (_formKey.currentState!.validate()) {
       await FirebaseFirestore.instance.collection('drivers').add({
         'name': nameController.text,
+        'username': usernameController.text,
         'nic': nicController.text,
         'driving_license_number': licenseController.text,
         'phone': phoneController.text,
       });
 
       nameController.clear();
+      usernameController.clear();
       nicController.clear();
       licenseController.clear();
       phoneController.clear();
@@ -220,7 +223,7 @@ class _DriverRegistrationPageState extends State<DriverRegistrationPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Center(
+                  const Center(
                     child: Text(
                       'Driver Registration',
                       style: TextStyle(
@@ -277,6 +280,33 @@ class _DriverRegistrationPageState extends State<DriverRegistrationPage> {
                                 },
                               ),
                             ),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 10.0),
+                              child: TextFormField(
+                                controller: usernameController,
+                                decoration: InputDecoration(
+                                  labelText: 'Username',
+                                  prefixIcon: const Icon(
+                                      Icons.verified_user_sharp,
+                                      color: Color(0xff27AE60)),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                    borderSide: const BorderSide(
+                                        color: Color(0xff27AE60)),
+                                  ),
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter the driver\'s username';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
                             // NIC
                             Padding(
                               padding:
@@ -298,7 +328,11 @@ class _DriverRegistrationPageState extends State<DriverRegistrationPage> {
                                 ),
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
-                                    return 'Please enter the driver\'s NIC';
+                                    return "Enter a valid NIC";
+                                  } else if (!RegExp(r'^[0-9]{9}[VXvx]$')
+                                          .hasMatch(value) &&
+                                      !RegExp(r'^[0-9]{12}$').hasMatch(value)) {
+                                    return "Enter a valid NIC (e.g., 123456789V or 199023456789)";
                                   }
                                   return null;
                                 },
@@ -327,6 +361,11 @@ class _DriverRegistrationPageState extends State<DriverRegistrationPage> {
                                   if (value == null || value.isEmpty) {
                                     return 'Please enter the driver\'s license number';
                                   }
+                                  // Regular expression to match one capital letter followed by 7 digits
+                                  else if (!RegExp(r'^[A-Z][0-9]{7}$')
+                                      .hasMatch(value)) {
+                                    return 'License number must start with a capital letter followed by 7 digits';
+                                  }
                                   return null;
                                 },
                               ),
@@ -352,7 +391,12 @@ class _DriverRegistrationPageState extends State<DriverRegistrationPage> {
                                 ),
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
-                                    return 'Please enter the driver\'s phone number';
+                                    return "Enter a valid phone number";
+                                  } else if (value.length != 10) {
+                                    return "Phone number must be 10 digits";
+                                  } else if (!RegExp(r'^[0-9]{10}$')
+                                      .hasMatch(value)) {
+                                    return "Enter only digits";
                                   }
                                   return null;
                                 },

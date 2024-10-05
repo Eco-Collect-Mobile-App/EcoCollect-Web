@@ -12,6 +12,7 @@ class _SignInPageState extends State<SignInPage> {
   final _formKey = GlobalKey<FormState>();
   String _email = '';
   String _password = '';
+  bool _obscurePassword = true;
 
   Future<void> _signIn() async {
     if (_formKey.currentState!.validate()) {
@@ -61,8 +62,26 @@ class _SignInPageState extends State<SignInPage> {
                     onSaved: (value) => _email = value!,
                   ),
                   TextFormField(
-                    decoration: InputDecoration(labelText: 'Password'),
-                    obscureText: true,
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_off
+                              : Icons
+                                  .visibility, // Change icon based on visibility
+                          color: Colors.grey,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword =
+                                !_obscurePassword; // Toggle password visibility
+                          });
+                        },
+                      ),
+                    ),
+                    obscureText:
+                        _obscurePassword, // Hide or show the password based on state
                     validator: (value) =>
                         value!.isEmpty ? 'Enter your password' : null,
                     onSaved: (value) => _password = value!,
